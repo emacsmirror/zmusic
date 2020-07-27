@@ -930,54 +930,63 @@ BEAT and DEGREE are one-indexed."
   (= (line-end-position)
      *zmusic//end-of-music-point*))
 
-(defun zmusic/previous-beat ()
-  "Move to the same degree of the previous beat."
-  (interactive)
-  (cond ((< (point)
-            *zmusic//beginning-of-music-point*)
-         (goto-char *zmusic//beginning-of-music-point*))
-        ((zmusic//at-first-beat)
-         ;;don't go anywhere
-         nil)
-        (t (let ((column (current-column)))
-             (forward-line -1)
-             (forward-char column)
-             (when (cl-oddp column)
-               (forward-char -1))))))
+(defun zmusic/previous-beat (lines-to-move)
+  "Move to the same degree of the beat LINES-TO-MOVE before point."
+  (interactive "p")
+  (while (> lines-to-move 0)
+    (cl-decf lines-to-move)
+    (cond ((< (point)
+              *zmusic//beginning-of-music-point*)
+           (goto-char *zmusic//beginning-of-music-point*))
+          ((zmusic//at-first-beat)
+           ;;don't go anywhere
+           (setq lines-to-move 0))
+          (t (let ((column (current-column)))
+               (forward-line -1)
+               (forward-char column)
+               (when (cl-oddp column)
+                 (forward-char -1)))))))
 
-(defun zmusic/next-beat ()
-  "Move to the same degree of the next beat."
-  (interactive)
-  (cond ((< (point)
-            *zmusic//beginning-of-music-point*)
-         (goto-char *zmusic//beginning-of-music-point*))
-        ((zmusic//at-last-beat)
-         ;;don't go anywhere
-         nil)
-        (t (let ((column (current-column)))
-             (forward-line)
-             (forward-char column)
-             (when (cl-oddp column)
-               (forward-char -1))))))
+(defun zmusic/next-beat (lines-to-move)
+  "Move to the same degree of the beat LINES-TO-MOVE after point."
+  (interactive "p")
+  (while (> lines-to-move 0)
+    (cl-decf lines-to-move)
+    (cond ((< (point)
+              *zmusic//beginning-of-music-point*)
+           (goto-char *zmusic//beginning-of-music-point*))
+          ((zmusic//at-last-beat)
+           ;;don't go anywhere
+           (setq lines-to-move 0))
+          (t (let ((column (current-column)))
+               (forward-line)
+               (forward-char column)
+               (when (cl-oddp column)
+                 (forward-char -1)))))))
 
-(defun zmusic/forward-degree ()
-  "Move to the next degree of the same beat."
-  (interactive)
-  (cond ((looking-at (rx blank))
-         (forward-char 1))
-        ((looking-at (rx (zero-or-one any) line-end))
-         nil)
-        (t (forward-char 2))))
+(defun zmusic/forward-degree (degrees-forward)
+  "Move to the degree DEGREES-FORWARD after point in the same beat."
+  (interactive "p")
+  (while (> degrees-forward 0)
+    (cl-decf degrees-forward)
+    (cond ((looking-at (rx blank))
+           (forward-char 1))
+          ((looking-at (rx (zero-or-one any) line-end))
+           ;;don't move
+           (setq degrees-forward 0))
+          (t (forward-char 2)))))
 
-(defun zmusic/backward-degree ()
-  "Move to the previous degree of the same beat."
-  (interactive)
-  (cond ((looking-at (rx (or blank line-end)))
-         (backward-char 1))
-        ((bolp)
-         ;;do nothing
-         nil)
-        (t (backward-char 2))))
+(defun zmusic/backward-degree (degrees-backward)
+  "Move to the degree DEGREES-BACKWARD before point in the same beat."
+  (interactive "p")
+  (while (> degrees-backward 0)
+    (cl-decf degrees-backward)
+    (cond ((looking-at (rx (or blank line-end)))
+           (backward-char 1))
+          ((bolp)
+           ;;don't move
+           (setq degrees-backward 0))
+          (t (backward-char 2)))))
 
 (defun zmusic/set-beat ()
   "Set the beat to the beat number of the cursor."
