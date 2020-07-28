@@ -430,7 +430,7 @@ Each note is signified by a value in NOTES-AS-SEMITONES-UP."
     (play-wave-data wave-data)))
 
 
-(cl-defun play-wave-data (wave-data &optional (volume 20))
+(cl-defun play-wave-data (wave-data)
   "Play WAVE-DATA at VOLUME, asynchronously."
   (let ((temp-file-name (make-temp-file "zmusic" nil ".wav")))
     (write-bytes-to-file wave-data temp-file-name)
