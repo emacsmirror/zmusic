@@ -34,7 +34,7 @@
     (puthash ?F 15 table)
     (puthash ?f 15 table)
     table)
-  "A map of hex characters to the integer value")
+  "A map of hex characters to the integer value.")
 
 (defconst quad-to-hex-table
   (let ((table (make-hash-table :size 16)))
