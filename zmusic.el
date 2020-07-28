@@ -434,7 +434,7 @@ Each note is signified by a value in NOTES-AS-SEMITONES-UP."
   "Play WAVE-DATA at VOLUME, asynchronously."
   (let ((temp-file-name (make-temp-file "zmusic" nil ".wav")))
     (write-bytes-to-file wave-data temp-file-name)
-    (start-process-shell-command "zmusic" nil (format "aplay %s" temp-file-name))))
+    (start-process-shell-command "zmusic" nil (format "%s %s" *zmusic/wave-playing-executable* temp-file-name))))
 
 (cl-defun make-tone (hz duration sample-rate &key (sample-size 2))
   "Make samples for a note at frequency HZ.
@@ -590,6 +590,16 @@ This is the last character of the last beat.")
 
 (defvar *zmusic//beat-kill-ring-yank-pointer* nil
   "The tail of *zmusic//beat-kill-ring* whose car is the last thing yanked.")
+
+(defcustom *zmusic/wave-playing-executable*
+  (pcase system-type
+    ((or 'gnu/linux 'gnu/kfreebsd) "aplay")
+    ('darwin "afplay"))
+  "An executable that can play wave files.
+
+It is passed the path to a wave file."
+  :type 'string
+  :group 'zmusic)
 
 (defun zmusic//insert-header ()
   "Insert a zmusic header into the current buffer."
@@ -778,7 +788,8 @@ However, a scale is one-based; the first degree of a scale is degree
          (semitones (zmusic//semitones-in-beat beat-number)))
     (start-process-shell-command "zmusic"
                                  nil
-                                 (format "aplay %s"
+                                 (format "%s %s"
+                                         *zmusic/wave-playing-executable*
                                          (gethash semitones *zmusic//rendered-notes-files*)))))
 
 (defun zmusic//start-timer ()
