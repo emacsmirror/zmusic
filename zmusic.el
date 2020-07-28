@@ -470,18 +470,6 @@ Use SAMPLE-RATE, and SAMPLE-SIZE."
   (* 440 (expt (expt 2 (/ 12.0))
                semitones-up)))
 
-(cl-defun make-tone-vector (hz duration sample-rate &key (sample-size 2))
-  "Make samples for a note at frequency HZ.
-
-The note should last DURATION seconds, sampled at SAMPLE-RATE.
-
-Each sample is SAMPLE-SIZE bytes long.
-
-This returns a list of bytes.  Each SAMPLE-SIZE bytes represent a
-single sample, reversed to be little-endian."
-  (let ((note (make-vector (* sample-rate duration sample-size) 0)))
-    ))
-
 ;;doesn't work?
 ;; (async-start (lambda () (play-sound (list 'sound :data (apply #'unibyte-string my-music) :volume 20))))
 ;; (play-sound (list 'sound :file "~/code/zmusic/my-music.wav" :volume 20))
