@@ -550,14 +550,10 @@ If it's nil, it's off.")
 
 ;;zck this should be wiped out whenever we change the tempo.
 ;;zck fill this async, so rendering doesn't block playing.
-;;zck the values here could also be the tempfile, so we don't have to write a bunch of identical tempfiles.
-;;    the only problem with that would be if there's a different way to play music on other operating systems.
-(defvar *zmusic//rendered-notes-cache* nil
-  "A hashtable mapping lists of notes to the rendered data for those notes.
+(defvar *zmusic//rendered-notes-files* nil
+  "A hashtable mapping lists of notes to files with the data for those notes.
 
-The notes are given by a list of semitones-up, in increasing order.
-
-The data here is the entire wav object.")
+The notes are given by a list of semitones-up, in increasing order.")
 
 (defvar *zmusic//current-beat-number* 1
   "The number of the current beat.
@@ -664,6 +660,12 @@ BEAT-NUMBER is one-indexed."
   (mapcar #'zmusic//scale-degree-to-semitones-up
           (zmusic//note-positions-in-beat beat-number)))
 
+(defun zmusic//save-wave-to-file (wave-data)
+  "Save WAVE-DATA to a file, and return the file location."
+  (let ((temp-file-name (make-temp-file "zmusic" nil ".wav")))
+    (write-bytes-to-file wave-data temp-file-name)
+    temp-file-name))
+
 (defun zmusic//render-semitones (semitones)
   "Render SEMITONES, a list of semitones up from the root, into full wave data."
   (let* ((sample-rate 4410)
@@ -679,11 +681,11 @@ BEAT-NUMBER is one-indexed."
         wave-data))
 
 (defun zmusic//render-beat-into-cache (beat-number)
-  "Render BEAT-NUMBER into *zmusic//rendered-notes-cache*."
+  "Render BEAT-NUMBER into *zmusic//rendered-notes-files*."
   (let ((semitones (zmusic//semitones-in-beat beat-number)))
     (when (and semitones
-               (not (gethash semitones *zmusic//rendered-notes-cache*)))
-      (puthash semitones (zmusic//render-semitones semitones) *zmusic//rendered-notes-cache*))))
+               (not (gethash semitones *zmusic//rendered-notes-files*)))
+      (puthash semitones (zmusic//save-wave-to-file (zmusic//render-semitones semitones)) *zmusic//rendered-notes-files*))))
 
 ;;zck this looks kind of weird. After running this once, the highlighted beat is not the next one played.
 (defun zmusic//count-beat ()
@@ -773,15 +775,11 @@ However, a scale is one-based; the first degree of a scale is degree
 
   (let* ((beat (zmusic//get-beat beat-number))
          (note-positions (-find-indices #'identity beat))
-         (semitones (zmusic//semitones-in-beat beat-number))
-         (wave-data (gethash semitones *zmusic//rendered-notes-cache*)))
-    ;;zck maybe this takes too much time? Do we need to combine notes?
-    (play-wave-data wave-data)
-    ;; (apply #'play-notes
-    ;;        (* 0.99 (/ 60.0 *zmusic//bpm*))
-    ;;        4410
-    ;;        semitones)
-    ))
+         (semitones (zmusic//semitones-in-beat beat-number)))
+    (start-process-shell-command "zmusic"
+                                 nil
+                                 (format "aplay %s"
+                                         (gethash semitones *zmusic//rendered-notes-files*)))))
 
 (defun zmusic//start-timer ()
   "Start stepping forward."
@@ -863,7 +861,7 @@ However, a scale is one-based; the first degree of a scale is degree
 
   ;;init to degree based on the scale used. Probably want two octaves?
   (setq *zmusic//sheet-music* (cl-loop for x below *zmusic//starting-beats* collect (make-list (hash-table-count zmusic//minor-pentatonic-scale) nil)))
-  (setq *zmusic//rendered-notes-cache* (make-hash-table :test #'equal)))
+  (setq *zmusic//rendered-notes-files* (make-hash-table :test #'equal)))
 
 (defun zmusic ()
   "Create a new zmusic."
