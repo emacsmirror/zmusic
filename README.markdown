@@ -1,6 +1,6 @@
 # zmusic
 
-Write music inside Emacs! This currently is test on Linux only, and there it requires [aplay](https://linux.die.net/man/1/aplay). There is untested support for MacOS.
+Write music inside Emacs! This currently has been tested on Linux only, and there it requires [aplay](https://linux.die.net/man/1/aplay). There is untested support for MacOS.
 
 ## Starting
 
