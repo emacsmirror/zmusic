@@ -12,7 +12,7 @@ Move around with `p`/`n`/`b`/`f`.
 
 ## Music creation
 
-Toggle the note at point with `space`.
+Toggle the note at point with `space`, or left-click to toggle.
 
 Kill the current beat with `k`, and yank it with `y`.
 
