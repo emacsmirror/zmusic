@@ -395,41 +395,6 @@ This assumes PCM, stereo, big-endian"
       (insert-byte byte 1))
     (write-region nil nil filename)))
 
-(cl-defun play-sound-data (sound-data sample-rate &optional (bytes-per-sample 1))
-  "Play SOUND-DATA, at SAMPLE-RATE.
-
-BYTES-PER-SAMPLE defaults to 1."
-  (let ((wave-data (zmusic//make-full-wave-data-little-endian sample-rate
-                                                               sound-data
-                                                               :number-of-channels 1
-                                                               :bytes-per-sample bytes-per-sample)))
-    (play-wave-data wave-data)))
-
-(defun play-notes (duration sample-rate &rest notes-as-semitones-up)
-  "Play notes for DURATION seconds.
-
-Notes are sampled at SAMPLE-RATE.
-
-Each note is signified by a value in NOTES-AS-SEMITONES-UP."
-  (let* ((raw-notes (mapcar (lambda (semitones-up) (make-note semitones-up duration sample-rate :sample-size 1))
-                            notes-as-semitones-up))
-         (averaged-notes (apply #'cl-mapcar
-                                (lambda (&rest samples) (/ (apply #'+ samples) (length samples)))
-                                raw-notes)))
-    (play-sound-data averaged-notes 4410)))
-
-(defun play-note (semitones-up duration)
-  "Play a note that's SEMITONES-UP from concert A (440hz) for DURATION seconds."
-  (let* ((sample-rate 4410)
-         (sample-size 1)
-         (music-data (make-note semitones-up duration sample-rate :sample-size sample-size))
-         (wave-data (zmusic//make-full-wave-data-little-endian sample-rate
-                                                               music-data
-                                                               :number-of-channels 1
-                                                               :bytes-per-sample 1)))
-    (play-wave-data wave-data)))
-
-
 (cl-defun play-wave-data (wave-data)
   "Play WAVE-DATA at VOLUME, asynchronously."
   (let ((temp-file-name (make-temp-file "zmusic" nil ".wav")))
@@ -469,37 +434,6 @@ Use SAMPLE-RATE, and SAMPLE-SIZE."
   "Return the frequency of a note SEMITONES-UP from concert A (440hz)."
   (* 440 (expt (expt 2 (/ 12.0))
                semitones-up)))
-
-;;doesn't work?
-;; (async-start (lambda () (play-sound (list 'sound :data (apply #'unibyte-string my-music) :volume 20))))
-;; (play-sound (list 'sound :file "~/code/zmusic/my-music.wav" :volume 20))
-;; (play-sound (list 'sound :file "~/code/zmusic/boing2.wav" :volume 20))
-;; (write-bytes-to-file my-music "~/code/zmusic/my-music.wav")
-;;zck compare my output with smallest.wav from https://github.com/mathiasbynens/small/blob/master/wav.wav
-;;try making a file like smallest.wav, with data being only (0 0 0 0)
-;;also try non-RIFX?
-
-
-;; hex values can be written as #x1F
-
-(setq example-wave (values-to-bytes
-                    ;;header
-                    '(ASCII "RIFX") ;RIFX is big-endian
-                    ;; how to specify size?
-                    0 0 0 24
-                    '(ASCII "WAVE")
-
-                    ;;fmt subchunk
-                    '(ASCII "fmt ")
-                    0 0 0 16
-                    0 1;;pcm
-                    0 2;;#channels, 2 is stereo
-                    (value-to-bytes 44100 4) ;;sample rate
-                    (value-to-bytes (* 44100 2 (/ 8.0)) 4);;byte rate
-
-                    ;;data subchunk
-                    ))
-
 
 (defun bytes-to-number (&rest bytes)
   "Convert a sequence of BYTES to a single number."
