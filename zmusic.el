@@ -558,7 +558,7 @@ It is passed the path to a wave file."
                                        (zmusic//note-position-to-scale-degree note-position))
                                       (zmusic//print-everything))
                             'face 'default
-                            'mouse-action2 (lambda (button) (message "button clicked! %s" button)))
+                            'follow-link t)
         (insert ?\ ))
       beat)
      (delete-char -1)
