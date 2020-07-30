@@ -25,3 +25,7 @@ Set the next note to the one at point with `s`.
 If the music is paused, replay the currently-highlighted beat with `r`.
 
 Count the highlighted beat, playing it and steping forwards, with `c`.
+
+## Reporting bugs
+
+Please file bugs at our [bug tracker](https://todo.sr.ht/~zck/zmusic).
