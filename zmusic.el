@@ -539,6 +539,16 @@ It is passed the path to a wave file."
                     *zmusic//bpm*
                     (make-string music-width ?-)))))
 
+(defun zmusic//insert-footer ()
+  "Insert the zmusic footer into the current buffer."
+  (let ((music-width (1- (* 2 (length (seq-elt *zmusic//sheet-music* 0))))))
+    (insert "\n")
+    (insert (make-string music-width ?-))
+    (insert "\n\n")
+    (insert "space: toggle note\n")
+    (insert "P: play/pause music\n")
+    (insert "p/n/b/f: move point")))
+
 (defun zmusic//insert-music ()
   "Insert the music into the current buffer."
   (setq *zmusic//beginning-of-music-point* (point))
@@ -771,6 +781,7 @@ However, a scale is one-based; the first degree of a scale is degree
     (erase-buffer)
     (zmusic//insert-header)
     (zmusic//insert-music)
+    (zmusic//insert-footer)
     (goto-char *zmusic//beginning-of-music-point*)
     (forward-line (1- beat))
     (forward-char (* 2 (1- degree))))
