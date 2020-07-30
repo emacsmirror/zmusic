@@ -584,7 +584,8 @@ It is passed the path to a wave file."
 
 Both of these are one-indexed, as music is."
   (zmusic//set-note beat-number scale-degree
-                    (not (zmusic//note-at beat-number scale-degree))))
+                    (not (zmusic//note-at beat-number scale-degree)))
+  (zmusic//render-beat-into-cache beat-number))
 
 (defun zmusic//note-positions-in-beat (beat-number)
   "Return a list of note positions in beat BEAT-NUMBER.
@@ -857,12 +858,7 @@ BEAT and DEGREE are one-indexed."
     ;; because that's how music works
     (let ((beat (zmusic//beat-number-at-point))
           (degree-in-scale (zmusic//degree-in-scale-at-point)))
-      (zmusic//toggle beat degree-in-scale)
-
-      ;;does rendering belong here, or in zmusic//toggle?
-      (zmusic//render-beat-into-cache beat)
-      ;; (async-start (lambda () (zmusic//render-beat-into-cache beat)))
-      )
+      (zmusic//toggle beat degree-in-scale))
     (zmusic//print-everything)))
 
 (defun zmusic//at-first-beat ()
