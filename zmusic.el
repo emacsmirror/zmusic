@@ -528,13 +528,15 @@ It is passed the path to a wave file."
   (goto-char (point-min))
   (let* ((music-width (1- (* 2 (length (seq-elt *zmusic//sheet-music* 0)))))
          (zmusic-left-padding (+ (/ (- music-width (length "==ZMUSIC==")) 2)
-                                 (length "==ZMUSIC==")))
+                                 (length "==ZMUSIC==")
+                                 1))
          (bpm-left-padding (+ (/ (- music-width
                                     ;;5 is two spaces plus "bpm"
                                     (+ (length (number-to-string *zmusic//bpm*)) 5))
                                  2)
-                              (length (number-to-string *zmusic//bpm*)))))
-    (insert (format (format "\n%%%ss\n\n%%%ss  bpm\n\n%%s\n\n" zmusic-left-padding bpm-left-padding)
+                              (length (number-to-string *zmusic//bpm*))
+                              1)))
+    (insert (format (format "\n%%%ss\n\n%%%ss  bpm\n\n %%s\n\n" zmusic-left-padding bpm-left-padding)
                     "==ZMUSIC=="
                     *zmusic//bpm*
                     (make-string music-width ?-)))))
@@ -543,11 +545,11 @@ It is passed the path to a wave file."
   "Insert the zmusic footer into the current buffer."
   (let ((music-width (1- (* 2 (length (seq-elt *zmusic//sheet-music* 0))))))
     (insert "\n")
-    (insert (make-string music-width ?-))
+    (insert " " (make-string music-width ?-))
     (insert "\n\n")
-    (insert "space: toggle note\n")
-    (insert "P: play/pause music\n")
-    (insert "p/n/b/f: move point")))
+    (insert "  space: toggle note\n")
+    (insert "  P: play/pause music\n")
+    (insert "  p/n/b/f: move point")))
 
 (defun zmusic//insert-music ()
   "Insert the music into the current buffer."
@@ -555,6 +557,7 @@ It is passed the path to a wave file."
   (seq-do-indexed
    (lambda (beat beat-number)
      ;; (lexical-let ((beat-number beat-number)))
+     (insert ?\s)
      (seq-do-indexed
       (lambda (note note-position)
         (insert-text-button (if note *zmusic//note* *zmusic//empty-note*)
@@ -784,7 +787,7 @@ However, a scale is one-based; the first degree of a scale is degree
     (zmusic//insert-footer)
     (goto-char *zmusic//beginning-of-music-point*)
     (forward-line (1- beat))
-    (forward-char (* 2 (1- degree))))
+    (forward-char (1+ (* 2 (1- degree)))))
   (zmusic//highlight-beat *zmusic//current-beat-number*))
 
 (cl-defun zmusic//highlight-beat (&optional (beat-number *zmusic//current-beat-number*))
@@ -886,8 +889,9 @@ BEAT and DEGREE are one-indexed."
           (t (let ((column (current-column)))
                (forward-line -1)
                (forward-char column)
-               (when (cl-oddp column)
-                 (forward-char -1)))))))
+               (cond ((bolp) (forward-char 1))
+                     ((cl-evenp column)
+                      (forward-char -1))))))))
 
 (defun zmusic/next-beat (lines-to-move)
   "Move to the same degree of the beat LINES-TO-MOVE after point."
@@ -903,8 +907,9 @@ BEAT and DEGREE are one-indexed."
           (t (let ((column (current-column)))
                (forward-line)
                (forward-char column)
-               (when (cl-oddp column)
-                 (forward-char -1)))))))
+               (cond ((bolp) (forward-char 1))
+                     ((cl-evenp column)
+                      (forward-char -1))))))))
 
 (defun zmusic/forward-degree (degrees-forward)
   "Move to the degree DEGREES-FORWARD after point in the same beat."
@@ -923,11 +928,15 @@ BEAT and DEGREE are one-indexed."
   (interactive "p")
   (while (> degrees-backward 0)
     (cl-decf degrees-backward)
-    (cond ((looking-at (rx (or blank line-end)))
-           (backward-char 1))
-          ((bolp)
+    (cond ((bolp)
+           ;;move to first degree
+           (forward-char 1)
+           (setq degrees-backward 0))
+          ((= (current-column) 1)
            ;;don't move
            (setq degrees-backward 0))
+          ((looking-at (rx (or blank line-end)))
+           (backward-char 1))
           (t (backward-char 2)))))
 
 (defun zmusic/set-beat ()
