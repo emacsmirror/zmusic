@@ -543,6 +543,30 @@ It is passed the path to a wave file."
                     *zmusic//bpm*
                     (make-string music-width ?-)))))
 
+(defun zmusic//insert-keyboard ()
+  "Insert the playable keyboard into the current buffer."
+  (let ((number-of-degrees (length (seq-elt *zmusic//sheet-music* 0))))
+
+    (insert "\n "
+            (make-string (1- (* 2 number-of-degrees)) ?-)
+            "\n")
+    (dotimes (scale-degree number-of-degrees)
+      (insert " ")
+      (insert-text-button
+       "o"
+       'action (lambda (button)
+                 (let* ((sample-rate 4410)
+                        (sample-size 1)
+                        (semitones-up (zmusic//scale-degree-to-semitones-up (1+ scale-degree)))
+                        (duration (/ 60.0 *zmusic//bpm*))
+                        (music-data (make-note semitones-up duration sample-rate :sample-size sample-size))
+                        (wave-data (zmusic//make-full-wave-data-little-endian sample-rate
+                                                                              music-data
+                                                                              :number-of-channels 1
+                                                                              :bytes-per-sample 1)))
+                   (play-wave-data wave-data)))
+       'follow-link t))))
+
 (defun zmusic//insert-footer ()
   "Insert the zmusic footer into the current buffer."
   (let ((music-width (1- (* 2 (length (seq-elt *zmusic//sheet-music* 0))))))
@@ -776,6 +800,9 @@ However, a scale is one-based; the first degree of a scale is degree
     (erase-buffer)
     (zmusic//insert-header)
     (zmusic//insert-music)
+
+    ;;zck how can this not sound bad? Maybe need to mix in to currently playing beat? Ugh.
+    ;;(zmusic//insert-keyboard)
     (zmusic//insert-footer)
     (goto-char *zmusic//beginning-of-music-point*)
     (forward-line (1- beat))
