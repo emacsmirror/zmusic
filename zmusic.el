@@ -710,11 +710,12 @@ However, a scale is one-based; the first degree of a scale is degree
   (let* ((beat (zmusic//get-beat beat-number))
          (note-positions (-find-indices #'identity beat))
          (semitones (zmusic//semitones-in-beat beat-number)))
-    (start-process-shell-command "zmusic"
-                                 nil
-                                 (format "%s %s"
-                                         *zmusic/wave-playing-executable*
-                                         (gethash semitones *zmusic//rendered-notes-files*)))))
+    (when semitones
+      (start-process-shell-command "zmusic"
+                                   nil
+                                   (format "%s %s"
+                                           *zmusic/wave-playing-executable*
+                                           (gethash semitones *zmusic//rendered-notes-files*))))))
 
 (defun zmusic//start-timer ()
   "Start stepping forward."
