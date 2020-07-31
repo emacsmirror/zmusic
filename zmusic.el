@@ -704,7 +704,6 @@ However, a scale is one-based; the first degree of a scale is degree
 1.  This function converts from a note position to a scale degree."
   (1+ note-position))
 
-;;zck switch this to use rendered-beat-cache
 (cl-defun zmusic//play-beat (&optional (beat-number *zmusic//current-beat-number*))
   "Play the BEAT-NUMBERth beat."
 
