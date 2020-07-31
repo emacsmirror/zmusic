@@ -690,17 +690,6 @@ This is one-indexed, as music is."
     (puthash 11 24 table)
     table))
 
-;;zck this does not currently work.
-(defmacro time-code (&body code)
-  "Time how long it takes CODE to run."
-  (declare (indent 1))
-  (cons 'progn code)
-  ;; `(let ((starting-time (current-time))
-  ;;        (return-value (progn ,@code)))
-  ;;    (message "Ran in %s seconds" (cl-second (time-since starting-time)))
-  ;;    return-value)
-  )
-
 (defun zmusic//scale-degree-to-semitones-up (scale-degree)
   "Calculate how many semitones up SCALE-DEGREE of the scale is.
 
