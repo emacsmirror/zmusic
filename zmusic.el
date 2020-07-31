@@ -1,5 +1,7 @@
 ;;; zmusic -- write music through Emacs. -*- lexical-binding: t; -*-
 
+;; Package-Requires: ((emacs "26.1") (dash "2.17.0"))
+
 ;;; Commentary:
 
 ;;; Code:
