@@ -532,15 +532,25 @@ It is passed the path to a wave file."
          (zmusic-left-padding (+ (/ (- music-width (length "==ZMUSIC==")) 2)
                                  (length "==ZMUSIC==")
                                  1))
+         (play/pause-label (if *zmusic//beat-timer* "pause" "play"))
+         (play/pause-left-padding (+ (/ (- music-width (length play/pause-label)) 2)
+                                     ;;"play" gets indented one more space.
+                                     (if *zmusic//beat-timer* 0 1)))
          (bpm-left-padding (+ (/ (- music-width
                                     ;;5 is two spaces plus "bpm"
                                     (+ (length (number-to-string *zmusic//bpm*)) 5))
                                  2)
                               (length (number-to-string *zmusic//bpm*))
                               1)))
-    (insert (format (format "\n%%%ss\n\n%%%ss  bpm\n\n %%s\n\n" zmusic-left-padding bpm-left-padding)
+    (insert (format (format "\n%%%ss\n\n%%%ss  bpm\n" zmusic-left-padding bpm-left-padding)
                     "==ZMUSIC=="
-                    *zmusic//bpm*
+                    *zmusic//bpm*))
+    (insert (make-string  play/pause-left-padding ?\s))
+    (insert-text-button play/pause-label
+                        'action (lambda (button)
+                                  (zmusic/toggle-play))
+                        'follow-link t)
+    (insert (format "\n\n %s\n\n"
                     (make-string music-width ?-)))))
 
 (defun zmusic//insert-keyboard ()
@@ -763,7 +773,10 @@ However, a scale is one-based; the first degree of a scale is degree
   (interactive)
   (if *zmusic//beat-timer*
       (zmusic//stop-timer)
-    (zmusic//start-timer)))
+    (zmusic//start-timer))
+
+  ;;mainly for changing the text on the play/pause button
+  (zmusic//print-everything))
 
 (defun zmusic/kill-beat ()
   "Kill the current beat -- setting it to all blank, and save it for pasting later."
