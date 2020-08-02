@@ -1,9 +1,11 @@
-;;; zmusic -- write music through Emacs -*- lexical-binding: t; -*-
+;;; zmusic.el --- Write repetitive electronic music -*- lexical-binding: t; -*-
+;; Copyright (C) 2020 Zachary Kanfer
 
+;; Author: Zachary Kanfer <zkanfer@gmail.com>
 ;; Version: 0.1
 ;; This file is not part of GNU Emacs.
 
-;; Copyright (C) 2020 Zachary Kanfer
+
 ;; Homepage: https://hg.sr.ht/~zck/zmusic
 ;; Keywords: multimedia
 
