@@ -419,10 +419,8 @@ This assumes PCM, stereo, big-endian"
 
 The note should last DURATION seconds, sampled at SAMPLE-RATE.
 
-Each sample is SAMPLE-SIZE bytes long.
-
-This returns a list of bytes.  Each SAMPLE-SIZE bytes represent a
-single sample, reversed to be little-endian."
+This returns a list of raw samples, as bytes.  Each SAMPLE-SIZE bytes
+represent a single sample, reversed to be little-endian."
   (seq-mapcat
    (lambda (val) (value-to-bytes val sample-size nil))
    (cl-loop for sample-number below (* duration sample-rate)
@@ -433,7 +431,9 @@ single sample, reversed to be little-endian."
                              0 (1- (expt 2 (* sample-size 8)))))))
 
 (cl-defun make-note (semitones-up duration sample-rate &key (sample-size 2))
-  "Make a note SEMITONES-UP semitones up from concert A (440hz)
+  "Make a note SEMITONES-UP semitones up from concert A (440hz).
+
+This returns a list of raw samples.
 
 The note lasts DURATION seconds.
 
