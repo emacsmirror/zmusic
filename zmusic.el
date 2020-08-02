@@ -756,7 +756,6 @@ However, a scale is one-based; the first degree of a scale is degree
   "Play the BEAT-NUMBERth beat."
 
   (let* ((beat (zmusic//get-beat beat-number))
-         (note-positions (-find-indices #'identity beat))
          (semitones (zmusic//semitones-in-beat beat-number)))
     (when semitones
       (start-process-shell-command "zmusic"
