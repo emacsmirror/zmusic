@@ -755,8 +755,7 @@ However, a scale is one-based; the first degree of a scale is degree
 (cl-defun zmusic//play-beat (&optional (beat-number *zmusic//current-beat-number*))
   "Play the BEAT-NUMBERth beat."
 
-  (let* ((beat (zmusic//get-beat beat-number))
-         (semitones (zmusic//semitones-in-beat beat-number)))
+  (let ((semitones (zmusic//semitones-in-beat beat-number)))
     (when semitones
       (start-process-shell-command "zmusic"
                                    nil
