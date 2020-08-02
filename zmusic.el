@@ -9,7 +9,7 @@
 ;; Homepage: https://hg.sr.ht/~zck/zmusic
 ;; Keywords: multimedia
 
-;; Package-Requires: ((emacs "26.1") (dash "2.17.0"))
+;; Package-Requires: ((emacs "26.1"))
 
 ;;; Commentary:
 ;; This library plays repetitive digital music.
@@ -635,13 +635,15 @@ Both of these are one-indexed, as music is."
                     (not (zmusic//note-at beat-number scale-degree)))
   (zmusic//render-beat-into-cache beat-number))
 
-(defun zmusic//note-positions-in-beat (beat-number)
-  "Return a list of note positions in beat BEAT-NUMBER.
+(defun zmusic//degrees-in-beat (beat-number)
+  "Return a list of degrees in beat BEAT-NUMBER.
 
-BEAT-NUMBER is one-indexed, as are the returned note positions."
+BEAT-NUMBER is one-indexed, as are the returned degrees."
   (let ((beat (zmusic//get-beat beat-number)))
-    (mapcar #'1+
-            (-find-indices #'identity beat))))
+    (cl-loop for is-on being the elements of beat
+             using (index note-position)
+             when is-on
+             collect (zmusic//note-position-to-scale-degree note-position))))
 
 ;;zck name "intervals-in-beat"?
 ;;Intervals are normally not a semitone count, though. Ugh.
@@ -652,7 +654,7 @@ If a beat has the root note, and a major third, this will return '(0 4).
 
 BEAT-NUMBER is one-indexed."
   (mapcar #'zmusic//scale-degree-to-semitones-up
-          (zmusic//note-positions-in-beat beat-number)))
+          (zmusic//degrees-in-beat beat-number)))
 
 (defun zmusic//save-wave-to-file (wave-data)
   "Save WAVE-DATA to a file, and return the file location."
