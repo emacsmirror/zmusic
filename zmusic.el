@@ -909,7 +909,8 @@ BEAT and DEGREE are one-indexed."
     (cl-decf lines-to-move)
     (cond ((< (point)
               *zmusic//beginning-of-music-point*)
-           (goto-char *zmusic//beginning-of-music-point*))
+           (goto-char *zmusic//beginning-of-music-point*)
+           (forward-char 1))
           ((zmusic//at-first-beat)
            ;;don't go anywhere
            (setq lines-to-move 0))
@@ -927,7 +928,8 @@ BEAT and DEGREE are one-indexed."
     (cl-decf lines-to-move)
     (cond ((< (point)
               *zmusic//beginning-of-music-point*)
-           (goto-char *zmusic//beginning-of-music-point*))
+           (goto-char *zmusic//beginning-of-music-point*)
+           (forward-char 1))
           ((zmusic//at-last-beat)
            ;;don't go anywhere
            (setq lines-to-move 0))
