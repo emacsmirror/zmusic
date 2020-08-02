@@ -470,7 +470,9 @@ Use SAMPLE-RATE, and SAMPLE-SIZE."
   (define-key zmusic-mode-map (kbd "c") #'zmusic//count-beat)
   (define-key zmusic-mode-map (kbd "r") #'zmusic/replay-beat)
   (define-key zmusic-mode-map (kbd "k") #'zmusic/kill-beat)
-  (define-key zmusic-mode-map (kbd "y") #'zmusic/yank-beat))
+  (define-key zmusic-mode-map (kbd "y") #'zmusic/yank-beat)
+
+  (define-key zmusic-mode-map (kbd "N") #'zmusic/new-zmusic))
 
 (defvar *zmusic//bpm* 240 "The beats per minute.")
 (defvar *zmusic//empty-note* ?- "The character printed when there is no note for a cell.")
@@ -859,8 +861,19 @@ However, a scale is one-based; the first degree of a scale is degree
   (interactive)
   (switch-to-buffer "zmusic")
   (zmusic-mode)
-  (zmusic//init)
-  (zmusic//print-everything))
+  (zmusic/new-zmusic nil))
+
+(cl-defun zmusic/new-zmusic (&optional (confirm t))
+  "Make a new zmusic, erasing anything that is currently there.
+
+Prompt the user for confirmation when CONFIRM is t."
+  (interactive)
+  (when (or (not confirm)
+            (y-or-n-p "Erase current zmusic and start a new one? "))
+    (zmusic//init)
+    (zmusic//print-everything)
+    (goto-char *zmusic//beginning-of-music-point*)
+    (forward-char 1)))
 
 (defun zmusic//beat-number-at-point ()
   "Return the beat number at point.
