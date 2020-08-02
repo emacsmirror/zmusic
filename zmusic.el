@@ -997,5 +997,4 @@ BEAT and DEGREE are one-indexed."
   (zmusic//highlight-beat *zmusic//current-beat-number*))
 
 (provide 'zmusic)
-
 ;;; zmusic.el ends here
