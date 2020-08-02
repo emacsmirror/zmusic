@@ -454,6 +454,7 @@ Use SAMPLE-RATE, and SAMPLE-SIZE."
              bytes
              :initial-value 0))
 
+;;;###autoload
 (define-derived-mode zmusic-mode special-mode "zmusic mode"
   "A mode to write music in."
   (define-key zmusic-mode-map (kbd "SPC") #'zmusic/toggle-at-point)
