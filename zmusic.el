@@ -1,8 +1,17 @@
-;;; zmusic -- write music through Emacs. -*- lexical-binding: t; -*-
+;;; zmusic -- write music through Emacs -*- lexical-binding: t; -*-
+
+;; Version: 0.1
+;; This file is not part of GNU Emacs.
+
+;; Copyright (C) 2020 Zachary Kanfer
+;; Homepage: https://hg.sr.ht/~zck/zmusic
+;; Keywords: multimedia
 
 ;; Package-Requires: ((emacs "26.1") (dash "2.17.0"))
 
 ;;; Commentary:
+;; This library plays repetitive digital music.
+;; Whether this is good is up to the viewer.
 
 ;;; Code:
 (require 'seq)
