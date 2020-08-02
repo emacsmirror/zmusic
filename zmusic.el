@@ -870,7 +870,8 @@ This is one-indexed; as that's how music works."
   "Return the degree in scale at point.
 
 This is one-indexed; as that's how music works."
-  (1+ (/ (current-column) 2)))
+  (min (1+ (/ (current-column) 2))
+       (hash-table-count zmusic//minor-pentatonic-scale)))
 
 (defun zmusic//note-at (beat-number scale-degree)
   "Return the note at beat BEAT-NUMBER, degree SCALE-DEGREE.
@@ -911,43 +912,49 @@ BEAT and DEGREE are one-indexed."
   (= (line-end-position)
      *zmusic//end-of-music-point*))
 
+(defun zmusic//after-last-beat ()
+  "Return if point is at the last beat."
+  (> (point)
+     *zmusic//end-of-music-point*))
+
 (defun zmusic/previous-beat (lines-to-move)
   "Move to the same degree of the beat LINES-TO-MOVE before point."
   (interactive "p")
-  (while (> lines-to-move 0)
-    (cl-decf lines-to-move)
-    (cond ((< (point)
-              *zmusic//beginning-of-music-point*)
-           (goto-char *zmusic//beginning-of-music-point*)
-           (forward-char 1))
-          ((zmusic//at-first-beat)
-           ;;don't go anywhere
-           (setq lines-to-move 0))
-          (t (let ((column (current-column)))
-               (forward-line -1)
-               (forward-char column)
-               (cond ((bolp) (forward-char 1))
-                     ((cl-evenp column)
-                      (forward-char -1))))))))
+  (let ((starting-degree (zmusic//degree-in-scale-at-point)))
+    (while (> lines-to-move 0)
+      (cl-decf lines-to-move)
+      (cond ((< (point)
+                *zmusic//beginning-of-music-point*)
+             (goto-char *zmusic//beginning-of-music-point*)
+             (forward-char 1))
+            ((> (point)
+                *zmusic//end-of-music-point*)
+             (goto-char *zmusic//end-of-music-point*))
+            ((zmusic//at-first-beat)
+             ;;don't go anywhere
+             (setq lines-to-move 0))
+            (t (forward-line -1))))
+    (beginning-of-line)
+    (forward-char (1- (* 2 starting-degree)))))
 
 (defun zmusic/next-beat (lines-to-move)
   "Move to the same degree of the beat LINES-TO-MOVE after point."
   (interactive "p")
-  (while (> lines-to-move 0)
-    (cl-decf lines-to-move)
-    (cond ((< (point)
-              *zmusic//beginning-of-music-point*)
-           (goto-char *zmusic//beginning-of-music-point*)
-           (forward-char 1))
-          ((zmusic//at-last-beat)
-           ;;don't go anywhere
-           (setq lines-to-move 0))
-          (t (let ((column (current-column)))
-               (forward-line)
-               (forward-char column)
-               (cond ((bolp) (forward-char 1))
-                     ((cl-evenp column)
-                      (forward-char -1))))))))
+  (let ((starting-degree (zmusic//degree-in-scale-at-point)))
+    (while (> lines-to-move 0)
+      (cl-decf lines-to-move)
+      (cond ((< (point)
+                *zmusic//beginning-of-music-point*)
+             (goto-char *zmusic//beginning-of-music-point*))
+            ((zmusic//at-last-beat)
+             ;;don't go anywhere
+             (setq lines-to-move 0))
+            ((zmusic//after-last-beat)
+             (goto-char *zmusic//end-of-music-point*)
+             (setq lines-to-move 0))
+            (t (forward-line))))
+    (beginning-of-line)
+    (forward-char (1- (* 2 starting-degree)))))
 
 (defun zmusic/forward-degree (degrees-forward)
   "Move to the degree DEGREES-FORWARD after point in the same beat."
