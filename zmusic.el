@@ -430,6 +430,14 @@ represent a single sample, reversed to be little-endian."
                              -1 1
                              0 (1- (expt 2 (* sample-size 8)))))))
 
+(cl-defun zmusic//make-silent-note (duration sample-rate)
+  "Render a silent note.  The note lasts DURATION seconds.
+
+Use SAMPLE-RATE, and each sample is one bytes.
+
+This is just the raw samples."
+  (make-list (truncate (* sample-rate duration)) 127))
+
 (cl-defun make-note (semitones-up duration sample-rate &key (sample-size 2))
   "Make a note SEMITONES-UP semitones up from concert A (440hz).
 
@@ -472,7 +480,8 @@ Use SAMPLE-RATE, and SAMPLE-SIZE."
   (define-key zmusic-mode-map (kbd "k") #'zmusic/kill-beat)
   (define-key zmusic-mode-map (kbd "y") #'zmusic/yank-beat)
 
-  (define-key zmusic-mode-map (kbd "N") #'zmusic/new-zmusic))
+  (define-key zmusic-mode-map (kbd "N") #'zmusic/new-zmusic)
+  (define-key zmusic-mode-map (kbd "X") #'zmusic/export))
 
 (defvar *zmusic//bpm* 240 "The beats per minute.")
 (defvar *zmusic//empty-note* ?- "The character printed when there is no note for a cell.")
@@ -664,14 +673,24 @@ BEAT-NUMBER is one-indexed."
     (write-bytes-to-file wave-data temp-file-name)
     temp-file-name))
 
+(defun zmusic//sample-semitones (semitones duration sample-rate)
+  "Sample SEMITONES, a list of semitones up from the root.
+
+The samples are taken for DURATION at SAMPLE-RATE."
+  (if semitones
+      (let ((raw-notes-samples (mapcar (lambda (semitones-up) (make-note semitones-up duration sample-rate :sample-size 1))
+                                       semitones)))
+        ;;just average them. Probably a better way to combine samples?
+        ;;This probably only works for single-byte samples.
+        (apply #'cl-mapcar
+               (lambda (&rest samples) (/ (apply #'+ samples) (length samples)))
+               raw-notes-samples))
+    (zmusic//make-silent-note duration sample-rate)))
+
 (defun zmusic//render-semitones (semitones)
   "Render SEMITONES, a list of semitones up from the root, into full wave data."
   (let* ((sample-rate 4410)
-         (notes-data (mapcar (lambda (semitones-up) (make-note semitones-up (/ 60.0 *zmusic//bpm*) sample-rate :sample-size 1))
-                             semitones))
-         (averaged-notes (apply #'cl-mapcar
-                                (lambda (&rest samples) (/ (apply #'+ samples) (length samples)))
-                                notes-data))
+         (averaged-notes (zmusic//sample-semitones semitones (/ 60.0 *zmusic//bpm*) sample-rate))
          (wave-data (zmusic//make-full-wave-data-little-endian sample-rate
                                                                averaged-notes
                                                                :number-of-channels 1
@@ -1008,6 +1027,25 @@ BEAT and DEGREE are one-indexed."
         (zmusic//beat-number-at-point))
   (setq *zmusic//repeat-current-beat-count* 1)
   (zmusic//highlight-beat *zmusic//current-beat-number*))
+
+(defun zmusic/export (file-to-export-to)
+  "Export the current zmusic to a file.
+
+The file is given by FILE-TO-EXPORT-TO."
+  (interactive "FExport to file: ")
+  (let* ((beats-as-semitones
+          (cl-loop for beat-number
+                   from 1
+                   to (length *zmusic//sheet-music*)
+                   collect (zmusic//semitones-in-beat beat-number)))
+         (all-samples
+          (seq-mapcat (lambda (semitones)
+                        (zmusic//sample-semitones semitones
+                                                  (/ 60.0 *zmusic//bpm*)
+                                                  4410))
+                      beats-as-semitones))
+         (wave-data (zmusic//make-full-wave-data-little-endian 4410 all-samples :number-of-channels 1 :bytes-per-sample 1)))
+    (write-bytes-to-file wave-data file-to-export-to)))
 
 (provide 'zmusic)
 ;;; zmusic.el ends here
