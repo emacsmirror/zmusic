@@ -373,6 +373,20 @@ This returns a list of bytes, where two consecutive bytes is a single sample."
             (zmusic//fmt-subchunk sample-rate)
             data-subchunk)))
 
+(defun annotate-wave-data (wave-data)
+  "Attempt to annotate the given WAVE-DATA."
+  (message (concat (format "header\nRIFF (82 73 70 70): %s\n" (seq-subseq wave-data 0 4))
+                   (format "chunkSize: %s\n" (seq-subseq wave-data 4 8))
+                   (format "WAVE (87 65 86 69): %s\n\n" (seq-subseq wave-data 8 12))
+
+                   (format "fmt subchunk\nfmt (102 109 116 32): %s\n" (seq-subseq wave-data 12 16))
+                   (format "subchunk1 size: %s\n" (seq-subseq wave-data 16 20))
+                   (format "linear quantization (1 0): %s\n" (seq-subseq wave-data 20 22))
+                   (format "number of channels: %s\n" (seq-subseq wave-data 22 24))
+                   (format "sample rate: %s\n" (seq-subseq wave-data 24 28))
+                   (format "byte rate: %s\n" (seq-subseq wave-data 28 32))
+                   (format "block align: %s\n" (seq-subseq wave-data 32 34))
+                   (format "bits per sample: %s\n" (seq-subseq wave-data 34 36)))))
 
 (cl-defun zmusic//make-full-wave-data-little-endian (sample-rate music-data &key (number-of-channels 2) (bytes-per-sample 2))
   "Make full wave data from the MUSIC-DATA, which is SAMPLE-RATE.
