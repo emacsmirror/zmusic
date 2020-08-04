@@ -815,12 +815,12 @@ However, a scale is one-based; the first degree of a scale is degree
   (cancel-timer *zmusic//beat-timer*)
   (setq *zmusic//beat-timer* nil))
 
-;;shouldn't this replay the currently-highlighted beat?
 (defun zmusic/toggle-play ()
   "Play if the music is stopped; stop the music if it's playing."
   (interactive)
   (if *zmusic//beat-timer*
-      (zmusic//stop-timer)
+      (progn (zmusic//stop-timer)
+             (setq *zmusic//repeat-current-beat-count* 1))
     (zmusic//start-timer))
 
   ;;mainly for changing the text on the play/pause button
