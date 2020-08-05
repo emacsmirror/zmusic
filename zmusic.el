@@ -553,9 +553,10 @@ This is the last character of the last beat.")
   "The tail of *zmusic//beat-kill-ring* whose car is the last thing yanked.")
 
 (defcustom *zmusic/wave-playing-executable*
-  (pcase system-type
-    ((or 'gnu/linux 'gnu/kfreebsd) "aplay")
-    ('darwin "afplay"))
+  (cl-first (seq-filter #'executable-find
+                        (list "aplay" ;;Linux
+                              "afplay";;Mac
+                              )))
   "An executable that can play wave files.
 
 It is passed the path to a wave file."
