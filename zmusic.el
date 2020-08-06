@@ -489,7 +489,7 @@ Use SAMPLE-RATE, and SAMPLE-SIZE."
   (define-key zmusic-mode-map (kbd "b") #'zmusic/backward-degree)
   (define-key zmusic-mode-map (kbd "f") #'zmusic/forward-degree)
   (define-key zmusic-mode-map (kbd "s") #'zmusic/set-beat)
-  (define-key zmusic-mode-map (kbd "c") #'zmusic//count-beat)
+  (define-key zmusic-mode-map (kbd "c") #'zmusic/count-beat)
   (define-key zmusic-mode-map (kbd "r") #'zmusic/replay-beat)
   (define-key zmusic-mode-map (kbd "k") #'zmusic/kill-beat)
   (define-key zmusic-mode-map (kbd "y") #'zmusic/yank-beat)
@@ -719,16 +719,29 @@ The samples are taken for DURATION at SAMPLE-RATE."
                (not (gethash semitones *zmusic//rendered-notes-files*)))
       (puthash semitones (zmusic//save-wave-to-file (zmusic//render-semitones semitones)) *zmusic//rendered-notes-files*))))
 
-;;zck this looks kind of weird. After running this once, the highlighted beat is not the next one played.
-(defun zmusic//count-beat ()
-  "Play the next beat."
+(defun zmusic/count-beat ()
+  "Play the next beat.
+
+After it is played, highlight the beat after it."
   (interactive)
+  (setq *zmusic//repeat-current-beat-count* 1)
+  (zmusic//play-next-beat)
+  (run-with-timer (/ 60.0 *zmusic//bpm*)
+                  nil
+                  #'zmusic//move-to-next-beat))
+
+(defun zmusic//move-to-next-beat ()
+  "Move to the next beat, but do not play it."
   (if (> *zmusic//repeat-current-beat-count* 0)
       (cl-decf *zmusic//repeat-current-beat-count*)
     (setq *zmusic//current-beat-number*
           (1+ (mod *zmusic//current-beat-number*
                    (length *zmusic//sheet-music*)))))
-  (zmusic//highlight-beat)
+  (zmusic//highlight-beat))
+
+(defun zmusic//play-next-beat ()
+  "Play the next beat."
+  (zmusic//move-to-next-beat)
   (zmusic//play-beat))
 
 (defun zmusic/replay-beat ()
@@ -1038,7 +1051,6 @@ BEAT and DEGREE are one-indexed."
 (defun zmusic/set-beat ()
   "Set the beat to the beat number of the cursor."
   (interactive)
-  ;;this interacts badly with /replay-beat
   (setq *zmusic//current-beat-number*
         (zmusic//beat-number-at-point))
   (setq *zmusic//repeat-current-beat-count* 1)
