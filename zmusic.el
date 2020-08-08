@@ -566,7 +566,7 @@ It is passed the path to a wave file."
 (defun zmusic//insert-header ()
   "Insert a zmusic header into the current buffer."
   (goto-char (point-min))
-  (let* ((music-width (1- (* 2 (length (seq-elt *zmusic//sheet-music* 0)))))
+  (let* ((music-width (1- (* 2 (length (zmusic//get-beat 1)))))
          (zmusic-left-padding (+ (/ (- music-width (length "==ZMUSIC==")) 2)
                                  (length "==ZMUSIC==")
                                  1))
@@ -593,7 +593,7 @@ It is passed the path to a wave file."
 
 (defun zmusic//insert-keyboard ()
   "Insert the playable keyboard into the current buffer."
-  (let ((number-of-degrees (length (seq-elt *zmusic//sheet-music* 0))))
+  (let ((number-of-degrees (length (zmusic//get-beat 0))))
 
     (insert "\n "
             (make-string (1- (* 2 number-of-degrees)) ?-)
@@ -617,7 +617,7 @@ It is passed the path to a wave file."
 
 (defun zmusic//insert-footer ()
   "Insert the zmusic footer into the current buffer."
-  (let ((music-width (1- (* 2 (length (seq-elt *zmusic//sheet-music* 0))))))
+  (let ((music-width (1- (* 2 (length (zmusic//get-beat 1))))))
     (insert "\n")
     (insert " " (make-string music-width ?-))
     (insert "\n\n")
@@ -945,7 +945,7 @@ This is one-indexed; as that's how music works."
 
 Both BEAT and DEGREE are one-indexed."
   ;; zck what about beat, degree outside valid values?
-  (seq-elt (seq-elt *zmusic//sheet-music* (1- beat-number))
+  (seq-elt (zmusic//get-beat beat-number)
            (1- scale-degree)))
 
 (defun zmusic//set-note (beat degree value)
