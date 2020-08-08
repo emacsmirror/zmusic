@@ -897,6 +897,9 @@ However, a scale is one-based; the first degree of a scale is degree
 
 (defun zmusic//init ()
   "Initialize data for a zmusic composition."
+  (when *zmusic//beat-timer*
+    (cancel-timer *zmusic//beat-timer*))
+  (setq *zmusic//beat-timer* nil)
   (setq *zmusic//current-beat-number* 1)
   (setq *zmusic//repeat-current-beat-count* 1)
 
