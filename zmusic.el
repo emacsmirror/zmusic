@@ -688,6 +688,12 @@ BEAT-NUMBER is one-indexed."
     (write-bytes-to-file wave-data temp-file-name)
     temp-file-name))
 
+(defun zmusic//combine-samples (list-of-samples)
+  "Combine LIST-OF-SAMPLES into a single set of samples."
+  (apply #'cl-mapcar
+         (lambda (&rest samples) (/ (apply #'+ samples) (length samples)))
+         list-of-samples))
+
 (defun zmusic//sample-semitones (semitones duration sample-rate)
   "Sample SEMITONES, a list of semitones up from the root.
 
@@ -697,9 +703,7 @@ The samples are taken for DURATION at SAMPLE-RATE."
                                        semitones)))
         ;;just average them. Probably a better way to combine samples?
         ;;This probably only works for single-byte samples.
-        (apply #'cl-mapcar
-               (lambda (&rest samples) (/ (apply #'+ samples) (length samples)))
-               raw-notes-samples))
+        (zmusic//combine-samples raw-notes-samples))
     (zmusic//make-silent-note duration sample-rate)))
 
 (defun zmusic//render-semitones (semitones)
