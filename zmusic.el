@@ -826,7 +826,7 @@ However, a scale is one-based; the first degree of a scale is degree
   (setq *zmusic//beat-timer*
         (run-with-timer (/ 60.0 *zmusic//bpm*)
                         (/ 60.0 *zmusic//bpm*)
-                        #'zmusic//count-beat)))
+                        #'zmusic/count-beat)))
 
 (defun zmusic//stop-timer ()
   "Stop stepping forward."
