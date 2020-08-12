@@ -384,7 +384,7 @@ This returns a vector of bytes."
     (write-bytes-to-file wave-data temp-file-name)
     (start-process-shell-command "zmusic" nil (format "%s %s" *zmusic/wave-playing-executable* temp-file-name))))
 
-(cl-defun make-tone (hz duration sample-rate &key (sample-size 2))
+(cl-defun make-tone (hz duration sample-rate &key (sample-size 2) (big-endian t))
   "Make samples for a note at frequency HZ.
 
 The note should last DURATION seconds, sampled at SAMPLE-RATE.
@@ -392,7 +392,7 @@ The note should last DURATION seconds, sampled at SAMPLE-RATE.
 This returns a list of raw samples, as bytes.  Each SAMPLE-SIZE bytes
 represent a single sample, reversed to be little-endian."
   (seq-mapcat
-   (lambda (val) (value-to-bytes val sample-size nil))
+   (lambda (val) (value-to-bytes val sample-size big-endian))
    (cl-loop for sample-number below (* duration sample-rate)
             collect (rescale (sin (rescale sample-number
                                            0 sample-rate
@@ -419,7 +419,8 @@ Use SAMPLE-RATE, and SAMPLE-SIZE."
   (make-tone (frequency semitones-up)
              duration
              sample-rate
-             :sample-size sample-size))
+             :sample-size sample-size
+             :big-endian nil))
 
 (defun frequency (semitones-up)
   "Return the frequency of a note SEMITONES-UP from concert A (440hz)."
