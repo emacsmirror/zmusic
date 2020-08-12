@@ -565,10 +565,10 @@ It is passed the path to a wave file."
                         (duration (/ 60.0 *zmusic//bpm*))
                         (music-data (make-note semitones-up duration sample-rate :sample-size sample-size))
                         (wave-data (zmusic//make-full-wave-data sample-rate
-                                                                              music-data
-                                                                              :number-of-channels 1
-                                                                              :bytes-per-sample 1
-                                                                              :big-endian nil)))
+                                                                music-data
+                                                                :number-of-channels 1
+                                                                :bytes-per-sample 1
+                                                                :big-endian nil)))
                    (play-wave-data wave-data)))
        'follow-link t))))
 
