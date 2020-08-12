@@ -214,37 +214,25 @@ a 0 C !"
   (should (equal (values-to-bytes "524946580000082457415645")
                  (zmusic//wave-header (make-list 2056 0)))))
 
-(defun zmusic//wave-header (data-subchunk)
+(cl-defun zmusic//wave-header (data-subchunk &optional (big-endian t))
   "Make a wave header, a list of bytes.
-
-The DATA-SUBCHUNK is the actual subchunk containing the data.  It has
-to be calculated before we get the header
-
-This assumes we're using big-endian numbers, plus PCM."
-  (values-to-bytes '(ASCII "RIFX")
-
-                    ;;size of file after this specific field. The whole file size - 8.
-                   `(b ,(+ 4 ;;rest of header
-                           24 ;;size of FMT chunk
-                           (length data-subchunk))
-                       4)
-                   '(ASCII "WAVE")))
-
-(defun zmusic//wave-header-little-endian (data-subchunk)
-    "Make a wave header, a list of bytes.
 
 The DATA-SUBCHUNK is the actual subchunk containing the data.  It has
 to be calculated before we get the header.
 
-This assumes we're using little-endian numbers, plus PCM."
-  (values-to-bytes '(ASCII "RIFF")
+BIG-ENDIAN controlls the endianness of the bytes here.
+
+This assumes we're using PCM."
+  (values-to-bytes (list 'ASCII (if big-endian
+                                    "RIFX"
+                                  "RIFF"))
 
                     ;;size of file after this specific field. The whole file size - 8.
                    `(b ,(+ 4 ;;rest of header
                            24 ;;size of FMT chunk
                            (length data-subchunk))
                        4
-                       nil)
+                       big-endian)
                    '(ASCII "WAVE")))
 
 (ert-deftest zmusic//sample-fmt ()
@@ -253,28 +241,7 @@ This assumes we're using little-endian numbers, plus PCM."
   (should (equal (values-to-bytes "666d74200000001000010002000056220001588800040010")
                  (zmusic//fmt-subchunk 22050))))
 
-(defun zmusic//fmt-subchunk (sample-rate)
-  "Make a fmt subchunk.
-
-SAMPLE-RATE is the number of samples per second.
-
-This assumes PCM and stereo, and works with big-endian numbers."
-  (let ((number-of-channels 2)
-        (bytes-per-sample 2))
-    (values-to-bytes '(ASCII "fmt ")
-                     '(b 16 4) ;;subchunk size -- PCM means no extra params.
-                     '(b 1 2) ;;PCM
-                     (list 'b number-of-channels 2)
-                     (list 'b sample-rate 4)
-                     (list 'b
-                           (* sample-rate number-of-channels bytes-per-sample)
-                           4)
-                     (list 'b
-                           (* number-of-channels bytes-per-sample)
-                           2)
-                     (list 'b (* 8 bytes-per-sample) 2))))
-
-(cl-defun zmusic//fmt-subchunk-little-endian (sample-rate &key (number-of-channels 2) (bytes-per-sample 2))
+(cl-defun zmusic//fmt-subchunk (sample-rate &key (number-of-channels 2) (bytes-per-sample 2) (big-endian t))
   "Make a fmt subchunk.
 
 SAMPLE-RATE is the number of samples per second.
@@ -283,21 +250,23 @@ NUMBER-OF-CHANNELS is the number of audio channels; 2 is stereo.
 
 BYTES-PER-SAMPLE is the number of bytes in each sample.
 
-This assumes PCM, and works with little-endian numbers."
+BIG-ENDIAN controlls the endianness.
+
+This assumes PCM."
   (values-to-bytes '(ASCII "fmt ")
-                   '(b 16 4 nil) ;;subchunk size -- PCM means no extra params.
-                   '(b 1 2 nil) ;;PCM
-                   (list 'b number-of-channels 2 nil)
-                   (list 'b sample-rate 4 nil)
+                   (list 'b 16 4 big-endian) ;;subchunk size -- PCM means no extra params.
+                   (list 'b 1 2 big-endian)  ;;PCM
+                   (list 'b number-of-channels 2 big-endian)
+                   (list 'b sample-rate 4 big-endian)
                    (list 'b
                          (* sample-rate number-of-channels bytes-per-sample)
                          4
-                         nil)
+                         big-endian)
                    (list 'b
                          (* number-of-channels bytes-per-sample)
                          2
-                         nil)
-                   (list 'b (* 8 bytes-per-sample) 2 nil)))
+                         big-endian)
+                   (list 'b (* 8 bytes-per-sample) 2 big-endian)))
 
 (defun rescale (value orig-low orig-high new-low new-high)
   "Rescales a VALUE in one range, to the equivalent value in another range.
@@ -350,16 +319,12 @@ This returns a list of bytes, where two consecutive bytes is a single sample."
                                     data)
                    (zmusic//data-subchunk data)))))
 
-(defun zmusic//data-subchunk (raw-samples)
-  "Make a data subchunk from RAW-SAMPLES."
-  (values-to-bytes '(ASCII "data")
-                   (list 'b (length raw-samples) 4)
-                   raw-samples))
+(cl-defun zmusic//data-subchunk (raw-samples &optional (big-endian t))
+  "Make a data subchunk from RAW-SAMPLES.
 
-(defun zmusic//data-subchunk-little-endian (raw-samples)
-  "Make a little-endian data subchunk from RAW-SAMPLES."
+BIG-ENDIAN controlls the endianness."
   (values-to-bytes '(ASCII "data")
-                   (list 'b (length raw-samples) 4 nil)
+                   (list 'b (length raw-samples) 4 big-endian)
                    raw-samples))
 
 ;;zck should this all be arrays?
@@ -388,29 +353,20 @@ This returns a list of bytes, where two consecutive bytes is a single sample."
                    (format "block align: %s\n" (seq-subseq wave-data 32 34))
                    (format "bits per sample: %s\n" (seq-subseq wave-data 34 36)))))
 
-(cl-defun zmusic//make-full-wave-data-little-endian (sample-rate music-data &key (number-of-channels 2) (bytes-per-sample 2))
+(cl-defun zmusic//make-full-wave-data (sample-rate music-data &key (number-of-channels 2) (bytes-per-sample 2) (big-endian t))
   "Make full wave data from the MUSIC-DATA, which is SAMPLE-RATE.
 
 NUMBER-OF-CHANNELS and BYTES-PER-SAMPLE are optional arguments.
 
-This assumes PCM, and works with little-endian numbers.
+BIG-ENDIAN controlls the endianness.
+
+This assumes PCM.
 
 This returns a vector of bytes."
-  (let ((data-subchunk (zmusic//data-subchunk-little-endian music-data)))
-    (vconcat (zmusic//wave-header-little-endian data-subchunk)
-             (zmusic//fmt-subchunk-little-endian sample-rate :number-of-channels number-of-channels :bytes-per-sample bytes-per-sample)
+  (let ((data-subchunk (zmusic//data-subchunk music-data big-endian)))
+    (vconcat (zmusic//wave-header data-subchunk big-endian)
+             (zmusic//fmt-subchunk sample-rate :number-of-channels number-of-channels :bytes-per-sample bytes-per-sample :big-endian big-endian)
              data-subchunk)))
-
-(defun zmusic//make-full-wave-data (sample-rate music-data)
-  "Make full wave data from the MUSIC-DATA, which is SAMPLE-RATE.
-
-This assumes PCM, stereo, big-endian"
-  (let ((data-subchunk (zmusic//data-subchunk music-data)))
-    (append (zmusic//wave-header data-subchunk)
-            (zmusic//fmt-subchunk sample-rate)
-            data-subchunk)))
-
-
 
 (defun write-bytes-to-file (bytes filename)
   "Write BYTES to FILENAME."
@@ -608,10 +564,11 @@ It is passed the path to a wave file."
                         (semitones-up (zmusic//scale-degree-to-semitones-up (1+ scale-degree)))
                         (duration (/ 60.0 *zmusic//bpm*))
                         (music-data (make-note semitones-up duration sample-rate :sample-size sample-size))
-                        (wave-data (zmusic//make-full-wave-data-little-endian sample-rate
+                        (wave-data (zmusic//make-full-wave-data sample-rate
                                                                               music-data
                                                                               :number-of-channels 1
-                                                                              :bytes-per-sample 1)))
+                                                                              :bytes-per-sample 1
+                                                                              :big-endian nil)))
                    (play-wave-data wave-data)))
        'follow-link t))))
 
@@ -710,10 +667,11 @@ The samples are taken for DURATION at SAMPLE-RATE."
   "Render SEMITONES, a list of semitones up from the root, into full wave data."
   (let* ((sample-rate 4410)
          (averaged-notes (zmusic//sample-semitones semitones (/ 60.0 *zmusic//bpm*) sample-rate))
-         (wave-data (zmusic//make-full-wave-data-little-endian sample-rate
-                                                               averaged-notes
-                                                               :number-of-channels 1
-                                                               :bytes-per-sample 1)))
+         (wave-data (zmusic//make-full-wave-data sample-rate
+                                                 averaged-notes
+                                                 :number-of-channels 1
+                                                 :bytes-per-sample 1
+                                                 :big-endian nil)))
         wave-data))
 
 (defun zmusic//render-beat-into-cache (beat-number)
@@ -1079,7 +1037,7 @@ The file is given by FILE-TO-EXPORT-TO."
                                                   (/ 60.0 *zmusic//bpm*)
                                                   4410))
                       beats-as-semitones))
-         (wave-data (zmusic//make-full-wave-data-little-endian 4410 all-samples :number-of-channels 1 :bytes-per-sample 1)))
+         (wave-data (zmusic//make-full-wave-data 4410 all-samples :number-of-channels 1 :bytes-per-sample 1 :big-endian nil)))
     (write-bytes-to-file wave-data file-to-export-to)))
 
 (provide 'zmusic)
