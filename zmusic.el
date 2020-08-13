@@ -689,9 +689,11 @@ After it is played, highlight the beat after it."
   (interactive)
   (setq *zmusic//repeat-current-beat-count* 1)
   (zmusic//play-next-beat)
-  (run-with-timer (/ 60.0 *zmusic//bpm*)
-                  nil
-                  #'zmusic//move-to-next-beat))
+  (zmusic//stop-timer)
+  (setq *zmusic//beat-timer*
+        (run-with-timer (* 0.99 (/ 60.0 *zmusic//bpm*))
+                        nil
+                        #'zmusic//move-to-next-beat)))
 
 (defun zmusic//move-to-next-beat ()
   "Move to the next beat, but do not play it."
@@ -778,18 +780,20 @@ However, a scale is one-based; the first degree of a scale is degree
                                            (gethash semitones *zmusic//rendered-notes-files*))))))
 
 (defun zmusic//start-timer ()
-  "Start stepping forward."
+  "Start playing the music."
   (interactive)
+  (setq *zmusic//repeat-current-beat-count* 1)
   (when *zmusic//beat-timer*
     (cancel-timer *zmusic//beat-timer*))
   (setq *zmusic//beat-timer*
-        (run-with-timer (/ 60.0 *zmusic//bpm*)
+        (run-with-timer 0
                         (/ 60.0 *zmusic//bpm*)
-                        #'zmusic/count-beat)))
+                        #'zmusic//play-next-beat)))
 
 (defun zmusic//stop-timer ()
   "Stop stepping forward."
-  (cancel-timer *zmusic//beat-timer*)
+  (when *zmusic//beat-timer*
+    (cancel-timer *zmusic//beat-timer*))
   (setq *zmusic//beat-timer* nil))
 
 (defun zmusic/toggle-play ()
