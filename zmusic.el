@@ -763,7 +763,7 @@ However, a scale is one-based; the first degree of a scale is degree
   (save-excursion
     (with-current-buffer "zmusic"
       (goto-char *zmusic//beginning-of-music-point*)
-      (forward-line (1- beat-number))
+      (zmusic/next-beat (1- beat-number))
       (move-overlay *zmusic//beat-overlay*
                     (point)
                     (line-end-position)
