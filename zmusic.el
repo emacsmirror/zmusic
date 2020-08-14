@@ -101,37 +101,6 @@
           (four-bits-to-hex (/ byte 16))
           (four-bits-to-hex (mod byte 16))))
 
-(ert-deftest value-to-bytes//hexstring ()
-  (should (equal '(16 255)
-                 (value-to-bytes "10FF"))))
-(ert-deftest value-to-bytes//ASCII-string-list ()
-  (should (equal '(97 98 99)
-                 (value-to-bytes '(ASCII "abc")))))
-(ert-deftest value-to-bytes//byte-list ()
-  (should (equal '(10 0 255)
-                 (value-to-bytes '(10 00 255)))))
-(ert-deftest value-to-bytes//single-byte ()
-  (should (equal '(81)
-                 (value-to-bytes 81))))
-(ert-deftest value-to-bytes//single-number-multiple-bytes ()
-  (should (equal '(2 1)
-                 (value-to-bytes 513))))
-(ert-deftest value-to-bytes//single-byte-with-padding ()
-  (should (equal '(0 0 0 81)
-                 (value-to-bytes 81 4))))
-(ert-deftest value-to-bytes//improperly-passed-float ()
-  (should (equal '(2 1)
-                 (value-to-bytes 513.1))))
-(ert-deftest value-to-bytes//byte-with-padding ()
-  (should (equal '(0 0 0 1)
-                 (value-to-bytes '(b 1 4)))))
-(ert-deftest value-to-bytes//little-endian/separate-args ()
-  (should (equal '(81 0 0 0)
-                 (value-to-bytes 81 4 nil))))
-(ert-deftest value-to-bytes//little-endian/single-value ()
-  (should (equal '(81 0 0 0)
-                 (value-to-bytes '(b 81 4 nil)))))
-
 ;;zck strip spaces? Why shouldn't (value-to-bytes "10 FF") work?
 (cl-defun value-to-bytes (value &optional (min-byte-count 1) (big-endian t))
   "Convert a VALUE to a sequence of bytes.
@@ -206,14 +175,6 @@ bytes '(97 48 67 33), which are the ASCII values for the characters
 a 0 C !"
   (seq-mapcat #'value-to-bytes values))
 
-(ert-deftest wave-header ()
-  ;;test data from http://soundfile.sapp.org/doc/WaveFormat/
-  ;;converted to big-endian (changed to RIFX, reordered size)
-  ;;also note that we're not making a header with a 2048-size data chunk
-  ;;We're making a header with a data chunk with 2048 bytes of data in it. The header itself has 8 more bytes (it begins with "data", then the size of data.)
-  (should (equal (values-to-bytes "524946580000082457415645")
-                 (zmusic//wave-header (make-list 2056 0)))))
-
 (cl-defun zmusic//wave-header (data-subchunk &optional (big-endian t))
   "Make a wave header, a list of bytes.
 
@@ -234,12 +195,6 @@ This assumes we're using PCM."
                        4
                        big-endian)
                    '(ASCII "WAVE")))
-
-(ert-deftest zmusic//sample-fmt ()
-  ;;test data from http://soundfile.sapp.org/doc/WaveFormat/
-  ;;converted to big-endian
-  (should (equal (values-to-bytes "666d74200000001000010002000056220001588800040010")
-                 (zmusic//fmt-subchunk 22050))))
 
 (cl-defun zmusic//fmt-subchunk (sample-rate &key (number-of-channels 2) (bytes-per-sample 2) (big-endian t))
   "Make a fmt subchunk.
@@ -281,12 +236,6 @@ and 10, so it should end up as halfway between 100 and 200."
            (- orig-high orig-low))
         (- new-high new-low))))
 
-(ert-deftest data-subchunk/basic-data ()
-  (let ((data '(1 2 3 4 5 6 7 8)))
-    (should (equal (values-to-bytes '(ASCII "data")
-                                    (list 'b (length data) 4)
-                                    data)
-                   (zmusic//data-subchunk data)))))
 
 (cl-defun zmusic//data-subchunk (raw-samples &optional (big-endian t))
   "Make a data subchunk from RAW-SAMPLES.
