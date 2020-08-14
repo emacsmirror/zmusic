@@ -495,14 +495,10 @@ It is passed the path to a wave file."
   (setq *zmusic//beginning-of-music-point* (point))
   (seq-do-indexed
    (lambda (beat beat-number)
-     ;; (lexical-let ((beat-number beat-number)))
      (insert ?\s)
      (seq-do-indexed
       (lambda (note note-position)
         (insert-text-button (if note *zmusic//note* *zmusic//empty-note*)
-                            ;;get beat number, degree number.
-                            ;;use it for button action
-                            ;;also change the face of the text.
                             'action (lambda (button)
                                       (zmusic//toggle
                                        ;;zck make a function for this when I can figure out a decent name
@@ -777,7 +773,6 @@ However, a scale is one-based; the first degree of a scale is degree
   (setq *zmusic//current-beat-number* 1)
   (setq *zmusic//repeat-current-beat-count* 1)
 
-  ;;init to degree based on the scale used. Probably want two octaves?
   (setq *zmusic//sheet-music* (cl-loop for x below *zmusic//starting-beats* collect (make-list (hash-table-count zmusic//minor-pentatonic-scale) nil)))
   (setq *zmusic//rendered-notes-files* (make-hash-table :test #'equal)))
 
