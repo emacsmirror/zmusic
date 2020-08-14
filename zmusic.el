@@ -281,37 +281,6 @@ and 10, so it should end up as halfway between 100 and 200."
            (- orig-high orig-low))
         (- new-high new-low))))
 
-(ert-deftest generate-samples/four-samples-per-second-one-hz-five-samples ()
-  (should (equal '(127 255  255 255  127 255  0 0  127 255)
-                 ;;four samples per second means five samples loops back to 127 255.
-                 (zmusic//generate-samples 1 4 5))))
-
-;;zck do we need sixteen-bit values?
-(cl-defun zmusic//generate-samples (frequency samples-per-second number-of-samples)
-  "Make a sample data subchunk, of a tone FREQUENCY.
-
-The data is NUMBER-OF-SAMPLES data points, sampled from FREQUENCY at
-SAMPLES-PER-SECOND.
-
-This returns a list of bytes, where two consecutive bytes is a single sample."
-  (cl-loop for sample-number below number-of-samples
-           ;;if you imagine a constantly spinning arm in a circle.
-           ;;It spins around FREQUENCY times in a second.
-           ;;We want to sample the sin of that value SAMPLES-PER-SECOND times.
-           ;;so we are (sample-number / samples-per-second) way through the second,
-           ;;and the angle of that arm goes to (2 * pi * frequency) radians.
-           for raw-value = (truncate (rescale (sin (rescale sample-number
-                                                            ;;convert from the number of samples...
-                                                            0 samples-per-second
-
-                                                            ;;we loop through 2pi
-                                                            ;;how many times? /frequency/ times.
-                                                            0 (* 2 float-pi frequency)))
-                                              -1 1
-                                              0 #xFFFF))
-           collect (/ raw-value 256)
-           collect (mod raw-value 256)))
-
 (ert-deftest data-subchunk/basic-data ()
   (let ((data '(1 2 3 4 5 6 7 8)))
     (should (equal (values-to-bytes '(ASCII "data")
@@ -326,17 +295,6 @@ BIG-ENDIAN controlls the endianness."
   (values-to-bytes '(ASCII "data")
                    (list 'b (length raw-samples) 4 big-endian)
                    raw-samples))
-
-;;zck should this all be arrays?
-(defun zmusic//make-sample-wave-data ()
-  "Return a list of wave file data."
-  (let* ((sample-rate 100)
-         (seconds 1)
-         (raw-samples (zmusic//generate-samples 440 sample-rate (* seconds sample-rate)))
-         (data-subchunk (zmusic//data-subchunk raw-samples)))
-    (append (zmusic//wave-header data-subchunk)
-            (zmusic//fmt-subchunk sample-rate)
-            data-subchunk)))
 
 (defun annotate-wave-data (wave-data)
   "Attempt to annotate the given WAVE-DATA."
