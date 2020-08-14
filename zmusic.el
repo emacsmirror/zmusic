@@ -403,7 +403,7 @@ represent a single sample, reversed to be little-endian."
 (cl-defun zmusic//make-silent-note (duration sample-rate)
   "Render a silent note.  The note lasts DURATION seconds.
 
-Use SAMPLE-RATE, and each sample is one bytes.
+Use SAMPLE-RATE, and each sample is one byte.
 
 This is just the raw samples."
   (make-list (truncate (* sample-rate duration)) 127))
