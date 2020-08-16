@@ -655,13 +655,18 @@ This is one-indexed, as music is."
     (puthash 9 19 table)
     (puthash 10 22 table)
     (puthash 11 24 table)
-    table))
+    table)
+  "The minor pentatonic scale, mapping the scale degree to the number of semitones up from the root.")
+
+(defvar zmusic//current-scale
+  zmusic//minor-pentatonic-scale
+  "The current scale used.")
 
 (defun zmusic//scale-degree-to-semitones-up (scale-degree)
   "Calculate how many semitones up SCALE-DEGREE of the scale is.
 
 For example, in a major scale, the third scale tone is four semitones up."
-  (gethash scale-degree zmusic//minor-pentatonic-scale))
+  (gethash scale-degree zmusic//current-scale))
 
 (defun zmusic//note-position-to-scale-degree (note-position)
   "A NOTE-POSITION is what code thinks the position in the scale a note is.
@@ -773,7 +778,7 @@ However, a scale is one-based; the first degree of a scale is degree
   (setq *zmusic//current-beat-number* 1)
   (setq *zmusic//repeat-current-beat-count* 1)
 
-  (setq *zmusic//sheet-music* (cl-loop for x below *zmusic//starting-beats* collect (make-list (hash-table-count zmusic//minor-pentatonic-scale) nil)))
+  (setq *zmusic//sheet-music* (cl-loop for x below *zmusic//starting-beats* collect (make-list (hash-table-count zmusic//current-scale) nil)))
   (setq *zmusic//rendered-notes-files* (make-hash-table :test #'equal)))
 
 (defun zmusic ()
@@ -807,7 +812,7 @@ This is one-indexed; as that's how music works."
 
 This is one-indexed; as that's how music works."
   (min (1+ (/ (current-column) 2))
-       (hash-table-count zmusic//minor-pentatonic-scale)))
+       (hash-table-count zmusic//current-scale)))
 
 (defun zmusic//note-at (beat-number scale-degree)
   "Return the note at beat BEAT-NUMBER, degree SCALE-DEGREE.
