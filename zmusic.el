@@ -666,7 +666,9 @@ This is one-indexed, as music is."
 
 (defvar zmusic//current-scale
   zmusic//minor-pentatonic-scale
-  "The current scale used.")
+  "The current scale used.
+
+A scale is a hash mapping the scale degree to the number of semitones up from the root.  See zmusic//major-scale for an example.")
 
 (defun zmusic//scale-degree-to-semitones-up (scale-degree)
   "Calculate how many semitones up SCALE-DEGREE of the scale is.
