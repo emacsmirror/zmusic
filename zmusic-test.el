@@ -74,7 +74,13 @@
                                     data)
                    (zmusic//data-subchunk data)))))
 
-
+(ert-deftest hex-digit-to-number ()
+  (seq-doseq (digit (number-sequence ?0 ?9))
+    (should (equal (- digit ?0)
+                   (hex-digit-to-number digit))))
+  (seq-doseq (digit (number-sequence ?A ?F))
+    (should (equal (+ 10 (- digit ?A))
+                   (hex-digit-to-number digit)))))
 
 
 (provide 'zmusic-test)

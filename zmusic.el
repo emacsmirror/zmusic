@@ -35,7 +35,7 @@
 ;;can specify hex numbers with #x123456789abcdef0, So #x10 is 16
 
 (defconst hex-lookup-table
-  (let ((table (make-hash-table :size 22)))
+  (let ((table (make-hash-table :size 16)))
     (puthash ?0 0 table)
     (puthash ?1 1 table)
     (puthash ?2 2 table)
@@ -47,17 +47,11 @@
     (puthash ?8 8 table)
     (puthash ?9 9 table)
     (puthash ?A 10 table)
-    (puthash ?a 10 table)
     (puthash ?B 11 table)
-    (puthash ?b 11 table)
     (puthash ?C 12 table)
-    (puthash ?c 12 table)
     (puthash ?D 13 table)
-    (puthash ?d 13 table)
     (puthash ?E 14 table)
-    (puthash ?e 14 table)
     (puthash ?F 15 table)
-    (puthash ?f 15 table)
     table)
   "A map of hex characters to the integer value.")
 
@@ -84,7 +78,7 @@
 
 (defun hex-digit-to-number (val)
   "Convert VAL from a hex digit (as a character or integer) to a number."
-  (gethash val hex-lookup-table 0))
+  (gethash (upcase val) hex-lookup-table 0))
 
 (defun hex-digits-to-byte (digit1 digit2)
   "Convert the hex DIGIT1 and DIGIT2 to a single byte value."
