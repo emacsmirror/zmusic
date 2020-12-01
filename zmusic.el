@@ -335,10 +335,11 @@ Use SAMPLE-RATE, and SAMPLE-SIZE."
              :sample-size sample-size
              :big-endian nil))
 
-(defun frequency (semitones-up)
-  "Return the frequency of a note SEMITONES-UP from concert A (440hz)."
-  (* 440 (expt (expt 2 (/ 12.0))
-               semitones-up)))
+(cl-defun frequency (semitones-up &optional (root-frequency *zmusic//root-frequency*))
+  "Return the frequency of a note SEMITONES-UP from ROOT-FREQUENCY."
+  (* root-frequency
+     (expt (expt 2 (/ 12.0))
+           semitones-up)))
 
 (defun bytes-to-number (&rest bytes)
   "Convert a sequence of BYTES to a single number."
@@ -368,6 +369,7 @@ Use SAMPLE-RATE, and SAMPLE-SIZE."
   (define-key zmusic-mode-map (kbd "X") #'zmusic/export))
 
 (defvar *zmusic//bpm* 240 "The beats per minute.")
+(defvar *zmusic//root-frequency* 440 "The frequency of the root note of the scale.")
 (defvar *zmusic//empty-note* ?- "The character printed when there is no note for a cell.")
 (defvar *zmusic//note* ?* "The character printed when there is a note for a cell.")
 
