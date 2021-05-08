@@ -435,6 +435,12 @@ It is passed the path to a wave file."
   :type 'string
   :group 'zmusic)
 
+(defcustom *zmusic/play-beat-upon-write*
+  t
+  "When a note is inserted or deleted, play that note's beat, unless the music is playing."
+  :type 'boolean
+  :group 'zmusic)
+
 (defun zmusic//insert-header ()
   "Insert a zmusic header into the current buffer."
   (goto-char (point-min))
@@ -528,7 +534,10 @@ It is passed the path to a wave file."
 Both of these are one-indexed, as music is."
   (zmusic//set-note beat-number scale-degree
                     (not (zmusic//note-at beat-number scale-degree)))
-  (zmusic//render-beat-into-cache beat-number))
+  (zmusic//render-beat-into-cache beat-number)
+  (when (and *zmusic/play-beat-upon-write*
+             (not *zmusic//beat-timer*))
+    (zmusic//play-beat beat-number)))
 
 (defun zmusic//degrees-in-beat (beat-number)
   "Return a list of degrees in beat BEAT-NUMBER.
