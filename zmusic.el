@@ -361,6 +361,7 @@ Use SAMPLE-RATE, and SAMPLE-SIZE."
   (define-key zmusic-mode-map (kbd "f") #'zmusic/forward-degree)
   (define-key zmusic-mode-map (kbd "s") #'zmusic/set-beat)
   (define-key zmusic-mode-map (kbd "c") #'zmusic/count-beat)
+  (define-key zmusic-mode-map (kbd "t") #'zmusic/play-this-beat)
   (define-key zmusic-mode-map (kbd "r") #'zmusic/replay-beat)
   (define-key zmusic-mode-map (kbd "k") #'zmusic/kill-beat)
   (define-key zmusic-mode-map (kbd "y") #'zmusic/yank-beat)
@@ -632,6 +633,12 @@ After it is played, highlight the beat after it."
 (defun zmusic/replay-beat ()
   "Replay the current beat."
   (interactive)
+  (zmusic//play-beat))
+
+(defun zmusic/play-this-beat ()
+  "Play the beat at point."
+  (interactive)
+  (zmusic/set-beat)
   (zmusic//play-beat))
 
 (defun zmusic//get-beat (beat-number)
