@@ -297,10 +297,12 @@ This returns a vector of bytes."
     (write-bytes-to-file wave-data temp-file-name)
     (start-process-shell-command "zmusic" nil (format "%s %s" *zmusic/wave-playing-executable* temp-file-name))))
 
-(cl-defun make-tone (hz duration sample-rate &key (sample-size 2) (big-endian t))
+(cl-defun make-tone (hz duration sample-rate &key (sample-size 1) (big-endian t) (min-sample-value 0) (max-sample-value (1- (expt 2 (* sample-size 8)))))
   "Make samples for a note at frequency HZ.
 
 The note should last DURATION seconds, sampled at SAMPLE-RATE.
+
+BIG-ENDIAN controls the endianness.
 
 This returns a list of raw samples, as bytes.  Each SAMPLE-SIZE bytes
 represent a single sample, reversed to be little-endian."
@@ -311,7 +313,7 @@ represent a single sample, reversed to be little-endian."
                                            0 sample-rate
                                            0 (* 2 float-pi hz)))
                              -1 1
-                             0 (1- (expt 2 (* sample-size 8)))))))
+                             min-sample-value max-sample-value))))
 
 (cl-defun zmusic//make-silent-note (duration sample-rate)
   "Render a silent note.  The note lasts DURATION seconds.
@@ -321,7 +323,7 @@ Use SAMPLE-RATE, and each sample is one byte.
 This is just the raw samples."
   (make-list (truncate (* sample-rate duration)) 127))
 
-(cl-defun make-note (semitones-up duration sample-rate &key (sample-size 2))
+(cl-defun make-note (semitones-up duration sample-rate &key (sample-size 1) (min-sample-value 0) (max-sample-value (1- (expt 2 (* sample-size 8)))))
   "Make a note SEMITONES-UP semitones up from concert A (440hz).
 
 This returns a list of raw samples.
@@ -333,7 +335,9 @@ Use SAMPLE-RATE, and SAMPLE-SIZE."
              duration
              sample-rate
              :sample-size sample-size
-             :big-endian nil))
+             :big-endian nil
+             :min-sample-value min-sample-value
+             :max-sample-value max-sample-value))
 
 (cl-defun frequency (semitones-up &optional (root-frequency *zmusic//root-frequency*))
   "Return the frequency of a note SEMITONES-UP from ROOT-FREQUENCY."
@@ -486,7 +490,7 @@ It is passed the path to a wave file."
                         (sample-size 1)
                         (semitones-up (zmusic//scale-degree-to-semitones-up (1+ scale-degree)))
                         (duration (/ 60.0 *zmusic//bpm*))
-                        (music-data (make-note semitones-up duration sample-rate :sample-size sample-size))
+                        (music-data (make-note semitones-up duration sample-rate))
                         (wave-data (zmusic//make-full-wave-data sample-rate
                                                                 music-data
                                                                 :number-of-channels 1
