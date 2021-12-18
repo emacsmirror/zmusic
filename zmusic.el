@@ -402,7 +402,7 @@ highlight.")
 (defvar *zmusic//repeat-current-beat-count* 0
   "The number of times to repeat the current beat.")
 
-(defvar *zmusic//beginning-of-music-point* 0
+(defvar *zmusic//beginning-of-music-point* 1
   "The point where the music starts.")
 
 (defvar *zmusic//end-of-music-point* 0
