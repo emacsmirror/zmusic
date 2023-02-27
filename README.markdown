@@ -2,6 +2,8 @@
 
 Write music inside Emacs! This currently has been tested on Linux only, and there it requires [aplay](https://linux.die.net/man/1/aplay). There is untested support for MacOS.
 
+![This would make music, if you were running it locally.](images/zmusic.gif)
+
 ## Starting
 
 Begin with `M-x zmusic`. This shows a series of lines. Each line of text represents a musical beat. The first beat should be highlighted in blue. Each dash in that line represents a potential note in that beat.
